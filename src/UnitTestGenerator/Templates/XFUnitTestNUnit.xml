@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Template>
+    <!-- Template Header -->
+    <TemplateConfiguration>
+        <_Name>Xamarin Forms UnitTest (NUnit)</_Name>
+        <_Category>Unit Tests</_Category>
+        
+        <LanguageName>C#</LanguageName>
+        <DefaultFilename>MethodNameShould</DefaultFilename>
+        <_Description>Creates a class to unit test a method with NUnit</_Description>
+    </TemplateConfiguration>
+    <!-- Template Content -->
+    <TemplateFiles>
+        <File
+            name="${Name}.cs"
+            AddStandardHeader="True"
+            src="./XFUnitTestNUnit.cs" />
+    </TemplateFiles>
+</Template>

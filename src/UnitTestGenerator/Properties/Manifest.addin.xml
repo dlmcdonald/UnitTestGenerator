@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionModel>
+     <!-- Templates -->
+    <Extension
+        path="/MonoDevelop/Ide/FileTemplates">
+        <FileTemplate
+            id="XFUnitTestNUnitTemplate"
+            file="Templates/XFUnitTestNUnit.xml" />
+    </Extension>
+    <!-- Commands -->
+    <Extension
+        path="/MonoDevelop/Ide/Commands">
+        <Command
+            id="UnitTestGenerator.Commands.GenerateUnitTestCommand"
+            _label="Generate Unit Test"
+            defaultHandler="UnitTestGenerator.Commands.GenerateUnitTestCommand" />
+    </Extension>
+    <!-- Add Command To (New) TextEditor -->
+    <Extension
+        path="/MonoDevelop/TextEditor/ContextMenu/Editor">
+        <CommandItem
+            id="UnitTestGenerator.Commands.GenerateUnitTestCommand" />
+    </Extension>
+    <Extension
+        path="/MonoDevelop/SourceEditor2/ContextMenu/Editor">
+        <CommandItem
+            id="UnitTestGenerator.Commands.GenerateUnitTestCommand" />
+    </Extension>
+</ExtensionModel>
