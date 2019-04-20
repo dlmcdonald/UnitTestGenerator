@@ -74,7 +74,7 @@ namespace UnitTestGenerator.Helpers
                     {
                         if (syntaxRoot.Span.IntersectsWith(span) && span.Start >= syntaxRoot.SpanStart && span.End <= syntaxRoot.Span.End)
                         {
-                            SyntaxNode syntaxNode = syntaxRoot.FindNode(span);
+                            var syntaxNode = syntaxRoot.FindNode(span);
                             if (syntaxNode is MethodDeclarationSyntax method)
                             {
                                 return method;
@@ -121,15 +121,15 @@ namespace UnitTestGenerator.Helpers
             return document;
         }
 
-        public void GenerateUnitTest(string _unitTestName, MethodDeclarationSyntax _currentMethod, MonoDevelop.Ide.Gui.Document _document)
+        public void GenerateUnitTest(string unitTestName, MethodDeclarationSyntax currentMethod, MonoDevelop.Ide.Gui.Document document)
         {
             //TODO: Investigate maybe using DocumentEditor to do changes instead of updaing syntax root
             var isTask = false;
-            if (_currentMethod.ReturnType is GenericNameSyntax taskSomethingReturnType)
+            if (currentMethod.ReturnType is GenericNameSyntax taskSomethingReturnType)
             {
                 isTask |= taskSomethingReturnType.Identifier.Text.Equals("Task");
             }
-            else if (_currentMethod.ReturnType is IdentifierNameSyntax taskReturnType)
+            else if (currentMethod.ReturnType is IdentifierNameSyntax taskReturnType)
             {
                 isTask |= taskReturnType.Identifier.Text.Equals("Task");
             }
@@ -140,49 +140,35 @@ namespace UnitTestGenerator.Helpers
             {
                 modifiers = SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword), SyntaxFactory.Token(SyntaxKind.AsyncKeyword));
             }
-            var newMethod = GenerateUnitTestMethodDeclaration(returnType, modifiers, _unitTestName);
-            var analysisDoc = _document.GetAnalysisDocument();
-            analysisDoc.TryGetSyntaxRoot(out var syntaxRoot);
+            var newMethod = GenerateUnitTestMethodDeclaration(returnType, modifiers, unitTestName);
 
-            var cds = syntaxRoot.DescendantNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault();
-            var newCds = cds.AddMembers(newMethod);
+            var analysisDoc = document.GetAnalysisDocument();
+            var editor = DocumentEditor.CreateAsync(analysisDoc).Result;
+            var cuRoot = editor.SemanticModel.SyntaxTree.GetCompilationUnitRoot();
+            if (cuRoot == null)
+                return;
+            var lastMethod = cuRoot.DescendantNodes().OfType<MethodDeclarationSyntax>().LastOrDefault();
+            editor.InsertAfter(lastMethod, newMethod);
 
-            var newRoot = syntaxRoot.ReplaceNode(cds, newCds);
+            if (isTask)
+            {
+                var taskUsing = cuRoot.Usings.FirstOrDefault(u => u.Name.ToString().Contains("System.Threading.Tasks"));
+                if (taskUsing == null)
+                {
+                    taskUsing = GenerateTaskUsingSyntax();
+                    var lastUsing = cuRoot.Usings.LastOrDefault();
+                    editor.InsertAfter(lastUsing, taskUsing);
+                }
+            }
 
-            var textBuffer = _document.GetContent<ITextBuffer>();
+            var newDocument = editor.GetChangedDocument();
 
+            var newRoot = newDocument.GetSyntaxRootAsync().Result;
+            var textBuffer = document.GetContent<ITextBuffer>();
             Microsoft.CodeAnalysis.Workspace.TryGetWorkspace(textBuffer.AsTextContainer(), out var workspace);
             newRoot = Formatter.Format(newRoot, Formatter.Annotation, workspace);
-            workspace.TryApplyChanges(analysisDoc.WithSyntaxRoot(newRoot).Project.Solution);
-            //check if we need to add the using statement for System.Threading.Tasks
-
-            //TODO: Add this back when you figure out how it works
-            //if (isTask)
-            //{
-            //    var nsds = cds.Parent as NamespaceDeclarationSyntax;
-            //    var cus = nsds.Parent as CompilationUnitSyntax;
-            //    var taskUsing = cus.Usings.FirstOrDefault(u => u.Name.ToString().Contains("System.Threading.Tasks"));
-            //    if (taskUsing == null)
-            //    {
-                    
-            //        taskUsing = GenerateTaskUsingSyntax();
-            //        var newADoc = _document.GetAnalysisDocument();
-            //        var editor = DocumentEditor.CreateAsync(newADoc).Result;
-            //        var lastUsing = editor.SemanticModel.SyntaxTree.GetCompilationUnitRoot().Usings.FirstOrDefault();
-            //        editor.InsertAfter(lastUsing, taskUsing);
-            //        var updatedADoc = editor.GetChangedDocument();
-            //        //var newCus = cus.AddUsings(taskUsing);
-            //        //var usingnewRoot = newRoot.ReplaceNode(cus, newCus);
-
-            //        //usingnewRoot = Formatter.Format(usingnewRoot, Formatter.Annotation, workspace);
-            //        workspace.TryApplyChanges(updatedADoc.Project.Solution);
-            //        //workspace.TryApplyChanges(analysisDoc.WithSyntaxRoot(usingnewRoot).Project.Solution);
-            //    }                
-            //}
-           
-
-            
-            _document.Save().ConfigureAwait(false);
+            workspace.TryApplyChanges(newDocument.WithSyntaxRoot(newRoot).Project.Solution);
+            document.Save().ConfigureAwait(false);
         }
 
         public MethodDeclarationSyntax GenerateUnitTestMethodDeclaration(string returnTypeName, SyntaxTokenList modifiers, string methodName)
@@ -212,7 +198,7 @@ namespace UnitTestGenerator.Helpers
         {
             //return SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName("System.Threading.Tasks"))
             //    .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
-            var qualifiedName = SyntaxFactory.ParseName("System.Threading.Tasks");
+            var qualifiedName = SyntaxFactory.ParseName(" System.Threading.Tasks");
             var usingSmnt = SyntaxFactory.UsingDirective(qualifiedName);
             return usingSmnt;
         }

@@ -74,21 +74,16 @@ namespace UnitTestGenerator.Dialogs
             ShowAll();
         }
 
-        private void Selection_Changed(object sender, EventArgs e)
+        void Selection_Changed(object sender, EventArgs e)
         {
-            if (!_projectList.Selection.GetSelected(out TreeModel model, out TreeIter iter))
+            if (!_projectList.Selection.GetSelected(out var model, out var iter))
             {
                 _selectedProjectLabel.Text = "Selected project: None";
             }
-            TreePath path = model.GetPath(iter);
+            var path = model.GetPath(iter);
             var selectedIndex = int.Parse(path.ToString());
             _selectedProject = _projects[selectedIndex];
             _selectedProjectLabel.Text = $"Selected project: {_selectedProject}";
-        }
-
-        protected override void OnShown()
-        {
-            base.OnShown();
         }
 
         void Confirm_Clicked(object sender, EventArgs e)

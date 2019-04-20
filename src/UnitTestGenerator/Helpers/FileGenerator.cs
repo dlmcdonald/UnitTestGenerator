@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 
 namespace UnitTestGenerator.Helpers
 {
@@ -29,7 +28,7 @@ namespace UnitTestGenerator.Helpers
                 "",
                 "\t}",
                 "}"};
-            FileInfo file = new FileInfo(filePath);
+            var file = new FileInfo(filePath);
             file.Directory.Create(); // If the directory already exists, this method does nothing.
             File.WriteAllLines(file.FullName, lines);
         }
