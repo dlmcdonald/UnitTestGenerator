@@ -78,14 +78,18 @@ namespace UnitTestGenerator.Dialogs
 
         void Selection_Changed(object sender, EventArgs e)
         {
-            if (!_projectList.Selection.GetSelected(out var model, out var iter))
+            //Selection changed triggers before project label has been instantiated correctly
+            if (_selectedProjectLabel != null)
             {
-                _selectedProjectLabel.Text = "Selected project: None";
+                if (!_projectList.Selection.GetSelected(out var model, out var iter))
+                {
+                    _selectedProjectLabel.Text = "Selected project: None";
+                }
+                var path = model.GetPath(iter);
+                var selectedIndex = int.Parse(path.ToString());
+                _selectedProject = _projects[selectedIndex];
+                _selectedProjectLabel.Text = $"Selected project: {_selectedProject}";
             }
-            var path = model.GetPath(iter);
-            var selectedIndex = int.Parse(path.ToString());
-            _selectedProject = _projects[selectedIndex];
-            _selectedProjectLabel.Text = $"Selected project: {_selectedProject}";
         }
 
         void Confirm_Clicked(object sender, EventArgs e)

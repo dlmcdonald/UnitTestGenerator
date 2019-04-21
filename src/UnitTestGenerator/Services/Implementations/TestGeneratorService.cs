@@ -117,7 +117,7 @@ namespace UnitTestGenerator.Services.Implementations
             {
                 try
                 {
-                    _fileService.GenerateFile(generatedTestModel.Namespace, generatedTestModel.Name, generatedTestModel.FilePath, "XFUnitTestNUnit");
+                    _fileService.GenerateFile(generatedTestModel.Namespace, generatedTestModel.Name, generatedTestModel.FilePath);
                     file = new ProjectFile(generatedTestModel.FilePath, BuildAction.Compile)
                     {
                         Visible = true,
