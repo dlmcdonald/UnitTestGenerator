@@ -1,10 +1,13 @@
-﻿using System.IO;
+﻿using System.Composition;
+using System.IO;
+using UnitTestGenerator.Services.Interfaces;
 
-namespace UnitTestGenerator.Helpers
+namespace UnitTestGenerator.Services.Implementations
 {
-    public static class FileGenerator
+    [Export(typeof(IFileService))]
+    public class FileService : IFileService
     {
-        public static void GenerateFile(string namespaceId, string classId, string filePath, string templateName)
+        public void GenerateFile(string namespaceId, string classId, string filePath, string templateName)
         {
             if (templateName == "XFUnitTestNUnit")
             {
@@ -12,7 +15,7 @@ namespace UnitTestGenerator.Helpers
             }
         }
 
-        static void GenerateXFUnitTestNUnitFile(string namespaceId, string classId, string filePath)
+        public void GenerateXFUnitTestNUnitFile(string namespaceId, string classId, string filePath)
         {
             string[] lines = { "using System;",
                 "using Moq;",

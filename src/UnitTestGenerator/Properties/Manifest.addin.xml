@@ -21,9 +21,14 @@
         <CommandItem
             id="UnitTestGenerator.Commands.GenerateUnitTestCommand" />
     </Extension>
+  <!-- Add Command to (Old) TextEditor -->
     <Extension
         path="/MonoDevelop/SourceEditor2/ContextMenu/Editor">
         <CommandItem
             id="UnitTestGenerator.Commands.GenerateUnitTestCommand" />
+    </Extension>
+  <!-- MEF Catalog -->
+    <Extension path="/MonoDevelop/Ide/Composition">
+        <Assembly file="UnitTestGenerator.dll" />
     </Extension>
 </ExtensionModel>

@@ -1,14 +1,17 @@
 ﻿using System;
+using System.Composition;
 using System.IO;
 using System.Linq;
 using MonoDevelop.Ide;
 using MonoDevelop.Projects;
 using Newtonsoft.Json;
 using UnitTestGenerator.Models;
+using UnitTestGenerator.Services.Interfaces;
 
-namespace UnitTestGenerator.Helpers
+namespace UnitTestGenerator.Services.Implementations
 {
-    public class ConfigurationHelper
+    [Export(typeof(IConfigurationService))]
+    public class ConfigurationService : IConfigurationService
     {
         public Configuration GetConfiguration()
         {

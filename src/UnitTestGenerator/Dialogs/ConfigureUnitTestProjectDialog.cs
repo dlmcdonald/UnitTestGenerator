@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Gtk;
 using MonoDevelop.Ide;
-using UnitTestGenerator.Helpers;
+using MonoDevelop.Ide.Composition;
+using UnitTestGenerator.Services.Interfaces;
 
 namespace UnitTestGenerator.Dialogs
 {
@@ -13,13 +14,14 @@ namespace UnitTestGenerator.Dialogs
         readonly Button _confirm;
         readonly Label _selectedProjectLabel;
         readonly List<string> _projects;
+        readonly IConfigurationService _configurationService;
         string _selectedProject = "";
 
         public ConfigureUnitTestProjectDialog()
         {
             WindowPosition = WindowPosition.CenterAlways;
             Title = "Configure UnitTest project";
-
+            _configurationService = CompositionManager.GetExportedValue<IConfigurationService>();
 
 
             //TreeView setup
@@ -90,10 +92,9 @@ namespace UnitTestGenerator.Dialogs
         {
             if (!string.IsNullOrWhiteSpace(_selectedProject))
             {
-                var configHelper = new ConfigurationHelper();
-                var config = configHelper.GetConfiguration();
+                var config = _configurationService.GetConfiguration();
                 config.UnitTestProjectName = _selectedProject;
-                configHelper.Save(config);
+                _configurationService.Save(config);
             }
             Hide();
         }

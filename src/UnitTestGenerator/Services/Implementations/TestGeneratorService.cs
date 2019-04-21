@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Composition;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -10,17 +11,29 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using MonoDevelop.Ide;
+using MonoDevelop.Ide.Composition;
 using MonoDevelop.Projects;
+using UnitTestGenerator.Helpers;
 using UnitTestGenerator.Models;
+using UnitTestGenerator.Services.Interfaces;
 
-namespace UnitTestGenerator.Helpers
+namespace UnitTestGenerator.Services.Implementations
 {
-    public class UnitTestHelper
+    [Export(typeof(ITestGeneratorService))]
+    public class TestGeneratorService : ITestGeneratorService
     {
+        readonly IConfigurationService _configurationService;
+        readonly IFileService _fileService;
+        public TestGeneratorService()
+        {
+            _configurationService = CompositionManager.GetExportedValue<IConfigurationService>();
+            _fileService = CompositionManager.GetExportedValue<IFileService>();
+        }
+
         public GeneratedTest CreateGeneratedTestModel(MethodDeclarationSyntax method)
         {
             //Get the configuration model
-            var config = new ConfigurationHelper().GetConfiguration();
+            var config = _configurationService.GetConfiguration();
             var generatedTest = new GeneratedTest();
 
             var projects = IdeApp.Workspace.GetAllProjects();
@@ -92,7 +105,7 @@ namespace UnitTestGenerator.Helpers
 
         public MonoDevelop.Ide.Gui.Document OpenDocument(GeneratedTest generatedTestModel)
         {
-            var config = new ConfigurationHelper().GetConfiguration();
+            var config = _configurationService.GetConfiguration();
             var projects = IdeApp.Workspace.GetAllProjects();
             var unitTestProject = projects.FirstOrDefault(p => p.Name == config.UnitTestProjectName);
 
@@ -104,7 +117,7 @@ namespace UnitTestGenerator.Helpers
             {
                 try
                 {
-                    FileGenerator.GenerateFile(generatedTestModel.Namespace, generatedTestModel.Name, generatedTestModel.FilePath, "XFUnitTestNUnit");
+                    _fileService.GenerateFile(generatedTestModel.Namespace, generatedTestModel.Name, generatedTestModel.FilePath, "XFUnitTestNUnit");
                     file = new ProjectFile(generatedTestModel.FilePath, BuildAction.Compile)
                     {
                         Visible = true,
@@ -123,7 +136,6 @@ namespace UnitTestGenerator.Helpers
 
         public void GenerateUnitTest(string unitTestName, MethodDeclarationSyntax currentMethod, MonoDevelop.Ide.Gui.Document document)
         {
-            //TODO: Investigate maybe using DocumentEditor to do changes instead of updaing syntax root
             var isTask = false;
             if (currentMethod.ReturnType is GenericNameSyntax taskSomethingReturnType)
             {
@@ -196,8 +208,6 @@ namespace UnitTestGenerator.Helpers
 
         public UsingDirectiveSyntax GenerateTaskUsingSyntax()
         {
-            //return SyntaxFactory.UsingDirective(SyntaxFactory.IdentifierName("System.Threading.Tasks"))
-            //    .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
             var qualifiedName = SyntaxFactory.ParseName(" System.Threading.Tasks");
             var usingSmnt = SyntaxFactory.UsingDirective(qualifiedName);
             return usingSmnt;
