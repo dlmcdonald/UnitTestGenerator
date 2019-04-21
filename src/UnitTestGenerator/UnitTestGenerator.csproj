@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
+    <ReleaseVersion>0.1.1</ReleaseVersion>
+    <SynchReleaseVersion>false</SynchReleaseVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MonoDevelop.Addins" Version="0.4.7" />
@@ -12,17 +14,23 @@
     <Folder Include="Helpers\" />
     <Folder Include="Models\" />
     <Folder Include="Templates\" />
+    <Folder Include="Services\" />
+    <Folder Include="Services\Interfaces\" />
+    <Folder Include="Services\Implementations\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Templates\XFUnitTestNUnit.cs" />
   </ItemGroup>
   <ItemGroup>
-    <AddinFile Include="Templates\XFUnitTestNUnit.cs" />
+    <AddinFile Include="Templates\XFUnitTestNUnit.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AddinFile>
+    <AddinFile Include="Templates\XFUnitTestNUnit.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AddinFile>
   </ItemGroup>
   <ItemGroup>
-    <None Update="Templates\XFUnitTestNUnit.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Remove="Templates\XFUnitTestNUnit.xml" />
   </ItemGroup>
   <ItemGroup>
     <AddinReference Include="MonoDevelop.CSharpBinding" />

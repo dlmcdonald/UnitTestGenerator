@@ -3,13 +3,22 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using MonoDevelop.Components.Commands;
+using MonoDevelop.Ide.Composition;
 using UnitTestGenerator.Dialogs;
-using UnitTestGenerator.Helpers;
+using UnitTestGenerator.Services.Interfaces;
 
 namespace UnitTestGenerator.Commands
 {
     public class GenerateUnitTestCommand : CommandHandler
     {
+        readonly ITestGeneratorService _testGeneratorService;
+        readonly IConfigurationService _configurationService;
+
+        public GenerateUnitTestCommand()
+        {
+            _testGeneratorService = CompositionManager.GetExportedValue<ITestGeneratorService>();
+            _configurationService = CompositionManager.GetExportedValue<IConfigurationService>();
+        }
 
         protected override void Update(CommandInfo info)
         {
@@ -17,10 +26,9 @@ namespace UnitTestGenerator.Commands
             info.Visible = false;
             info.Enabled = false;
 
-            var utHelper = new UnitTestHelper();
             try
             { 
-                var method = utHelper.GetActiveMethodDeclarationSyntax();
+                var method = _testGeneratorService.GetActiveMethodDeclarationSyntax();
 
                 if (method == null)
                     return;
@@ -50,19 +58,19 @@ namespace UnitTestGenerator.Commands
 
         protected override void Run()
         {
-            var config = new ConfigurationHelper().GetConfiguration();
+            var config = _configurationService.GetConfiguration();
             if (string.IsNullOrWhiteSpace(config.UnitTestProjectName))
             {
                 var dialog = new ConfigureUnitTestProjectDialog();
                 return;
             }
 
-            var utHelper = new UnitTestHelper();
-            var currentMethod = utHelper.GetActiveMethodDeclarationSyntax();
+            
+            var currentMethod = _testGeneratorService.GetActiveMethodDeclarationSyntax();
             if (currentMethod == null)
                 return;
-            var generatedTestModel = utHelper.CreateGeneratedTestModel(currentMethod);
-            var document = utHelper.OpenDocument(generatedTestModel);
+            var generatedTestModel = _testGeneratorService.CreateGeneratedTestModel(currentMethod);
+            var document = _testGeneratorService.OpenDocument(generatedTestModel);
 
 
 

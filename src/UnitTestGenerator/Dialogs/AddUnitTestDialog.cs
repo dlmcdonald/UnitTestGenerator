@@ -7,7 +7,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
+using MonoDevelop.Ide.Composition;
 using UnitTestGenerator.Helpers;
+using UnitTestGenerator.Services.Interfaces;
 
 namespace UnitTestGenerator.Dialogs
 {
@@ -18,12 +20,13 @@ namespace UnitTestGenerator.Dialogs
         readonly Entry _unitTestName;
         readonly Button _confirm;
         readonly MonoDevelop.Ide.Gui.Document _document;
+        readonly ITestGeneratorService _testGeneratorService;
 
         public AddUnitTestDialog(MonoDevelop.Ide.Gui.Document document, MethodDeclarationSyntax currentMethod)
         {
+            _testGeneratorService = CompositionManager.GetExportedValue<ITestGeneratorService>();
             _currentMethod = currentMethod;
             _document = document;
-            var config = new ConfigurationHelper().GetConfiguration();
             WindowPosition = WindowPosition.CenterAlways;
             Title = "Add Unit test method";
 
@@ -57,9 +60,8 @@ namespace UnitTestGenerator.Dialogs
         }
 
         void Confirm_Clicked(object sender, EventArgs e)
-        {
-            var utHelper = new UnitTestHelper();
-            utHelper.GenerateUnitTest(_unitTestName.Text, _currentMethod, _document);
+        { 
+            _testGeneratorService.GenerateUnitTest(_unitTestName.Text, _currentMethod, _document);
             Hide();
         }
 
