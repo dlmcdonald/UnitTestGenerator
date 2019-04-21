@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace UnitTestGenerator.Models
 {
@@ -12,6 +13,10 @@ namespace UnitTestGenerator.Models
         public string UnitTestSuffix { get; set; }
         [JsonProperty("unittest_class_suffix")]
         public string UnitTestClassSuffix { get; set; }
+        [JsonProperty("use_custom_setup_method")]
+        public bool UseCustomSetupMethod { get; set; }
+        [JsonProperty("custom_setup_method_lines")]
+        public List<string> CustomSetupMethodLines { get; set; }
 
 
         public static Configuration DefaultConfiguration()
@@ -21,7 +26,8 @@ namespace UnitTestGenerator.Models
                 RemoveFirst = true,
                 UnitTestProjectName = "",
                 UnitTestSuffix = "Should",
-                UnitTestClassSuffix = "Tests"
+                UnitTestClassSuffix = "Tests",
+                CustomSetupMethodLines = new List<string>()
             };
         }
     }
