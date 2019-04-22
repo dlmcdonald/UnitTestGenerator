@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using MonoDevelop.Ide.Composition;
 using UnitTestGenerator.Services.Interfaces;
+using System.Threading.Tasks;
 
 namespace UnitTestGenerator.Services.Implementations
 {
@@ -16,9 +17,9 @@ namespace UnitTestGenerator.Services.Implementations
             _configurationService = CompositionManager.GetExportedValue<IConfigurationService>();
         }
 
-        public void GenerateFile(string namespaceId, string classId, string filePath)
+        public async Task GenerateFile(string namespaceId, string classId, string filePath)
         {
-            var config = _configurationService.GetConfiguration();
+            var config = await _configurationService.GetConfiguration();
             var lines = new List<string> { "using System;",
                 "using Moq;",
                 "using NUnit.Framework;",

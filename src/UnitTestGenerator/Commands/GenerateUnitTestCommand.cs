@@ -56,9 +56,9 @@ namespace UnitTestGenerator.Commands
             }
         }
 
-        protected override void Run()
+        protected override async void Run()
         {
-            var config = _configurationService.GetConfiguration();
+            var config = await _configurationService.GetConfiguration();
             if (string.IsNullOrWhiteSpace(config.UnitTestProjectName))
             {
                 var dialog = new ConfigureUnitTestProjectDialog();
@@ -69,8 +69,8 @@ namespace UnitTestGenerator.Commands
             var currentMethod = _testGeneratorService.GetActiveMethodDeclarationSyntax();
             if (currentMethod == null)
                 return;
-            var generatedTestModel = _testGeneratorService.CreateGeneratedTestModel(currentMethod);
-            var document = _testGeneratorService.OpenDocument(generatedTestModel);
+            var generatedTestModel = await _testGeneratorService.CreateGeneratedTestModel(currentMethod);
+            var document = await _testGeneratorService.OpenDocument(generatedTestModel);
 
 
 

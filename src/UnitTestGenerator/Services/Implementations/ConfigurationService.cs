@@ -2,6 +2,7 @@
 using System.Composition;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using MonoDevelop.Ide;
 using MonoDevelop.Projects;
 using Newtonsoft.Json;
@@ -13,7 +14,7 @@ namespace UnitTestGenerator.Services.Implementations
     [Export(typeof(IConfigurationService))]
     public class ConfigurationService : IConfigurationService
     {
-        public Configuration GetConfiguration()
+        public async Task<Configuration> GetConfiguration()
         {
             var solution = IdeApp.Workspace.GetAllSolutions().FirstOrDefault();
 
@@ -38,7 +39,7 @@ namespace UnitTestGenerator.Services.Implementations
                 solutionItemsFolder.Files.Add(filePath);
                 using (var monitor = IdeApp.Workbench.ProgressMonitors.GetSaveProgressMonitor(false))
                 {
-                    solution.SaveAsync(monitor).ConfigureAwait(false);
+                    await solution.SaveAsync(monitor);
                 }
             }
             else

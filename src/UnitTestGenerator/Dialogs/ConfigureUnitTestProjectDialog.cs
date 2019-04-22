@@ -92,11 +92,11 @@ namespace UnitTestGenerator.Dialogs
             }
         }
 
-        void Confirm_Clicked(object sender, EventArgs e)
+        async void Confirm_Clicked(object sender, EventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(_selectedProject))
             {
-                var config = _configurationService.GetConfiguration();
+                var config = await _configurationService.GetConfiguration();
                 config.UnitTestProjectName = _selectedProject;
                 _configurationService.Save(config);
             }

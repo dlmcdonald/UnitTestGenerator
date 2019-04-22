@@ -2,6 +2,7 @@
 using System.Composition;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -30,10 +31,10 @@ namespace UnitTestGenerator.Services.Implementations
             _fileService = CompositionManager.GetExportedValue<IFileService>();
         }
 
-        public GeneratedTest CreateGeneratedTestModel(MethodDeclarationSyntax method)
+        public async Task<GeneratedTest> CreateGeneratedTestModel(MethodDeclarationSyntax method)
         {
             //Get the configuration model
-            var config = _configurationService.GetConfiguration();
+            var config = await _configurationService.GetConfiguration();
             var generatedTest = new GeneratedTest();
 
             var projects = IdeApp.Workspace.GetAllProjects();
@@ -103,9 +104,9 @@ namespace UnitTestGenerator.Services.Implementations
             return null;
         }
 
-        public MonoDevelop.Ide.Gui.Document OpenDocument(GeneratedTest generatedTestModel)
+        public async Task<MonoDevelop.Ide.Gui.Document> OpenDocument(GeneratedTest generatedTestModel)
         {
-            var config = _configurationService.GetConfiguration();
+            var config = await _configurationService.GetConfiguration();
             var projects = IdeApp.Workspace.GetAllProjects();
             var unitTestProject = projects.FirstOrDefault(p => p.Name == config.UnitTestProjectName);
 
@@ -117,7 +118,7 @@ namespace UnitTestGenerator.Services.Implementations
             {
                 try
                 {
-                    _fileService.GenerateFile(generatedTestModel.Namespace, generatedTestModel.Name, generatedTestModel.FilePath);
+                    await _fileService.GenerateFile(generatedTestModel.Namespace, generatedTestModel.Name, generatedTestModel.FilePath);
                     file = new ProjectFile(generatedTestModel.FilePath, BuildAction.Compile)
                     {
                         Visible = true,
@@ -134,7 +135,7 @@ namespace UnitTestGenerator.Services.Implementations
             return document;
         }
 
-        public void GenerateUnitTest(string unitTestName, MethodDeclarationSyntax currentMethod, MonoDevelop.Ide.Gui.Document document)
+        public async Task GenerateUnitTest(string unitTestName, MethodDeclarationSyntax currentMethod, MonoDevelop.Ide.Gui.Document document)
         {
             var isTask = false;
             if (currentMethod.ReturnType is GenericNameSyntax taskSomethingReturnType)
@@ -155,7 +156,7 @@ namespace UnitTestGenerator.Services.Implementations
             var newMethod = GenerateUnitTestMethodDeclaration(returnType, modifiers, unitTestName);
 
             var analysisDoc = document.GetAnalysisDocument();
-            var editor = DocumentEditor.CreateAsync(analysisDoc).Result;
+            var editor = await DocumentEditor.CreateAsync(analysisDoc);
             var cuRoot = editor.SemanticModel.SyntaxTree.GetCompilationUnitRoot();
             if (cuRoot == null)
                 return;
@@ -175,12 +176,12 @@ namespace UnitTestGenerator.Services.Implementations
 
             var newDocument = editor.GetChangedDocument();
 
-            var newRoot = newDocument.GetSyntaxRootAsync().Result;
+            var newRoot = await newDocument.GetSyntaxRootAsync();
             var textBuffer = document.GetContent<ITextBuffer>();
             Microsoft.CodeAnalysis.Workspace.TryGetWorkspace(textBuffer.AsTextContainer(), out var workspace);
             newRoot = Formatter.Format(newRoot, Formatter.Annotation, workspace);
             workspace.TryApplyChanges(newDocument.WithSyntaxRoot(newRoot).Project.Solution);
-            document.Save().ConfigureAwait(false);
+            await document.Save();
         }
 
         public MethodDeclarationSyntax GenerateUnitTestMethodDeclaration(string returnTypeName, SyntaxTokenList modifiers, string methodName)
