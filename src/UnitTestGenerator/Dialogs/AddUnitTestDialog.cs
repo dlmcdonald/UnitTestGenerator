@@ -59,9 +59,9 @@ namespace UnitTestGenerator.Dialogs
             base.OnShown();
         }
 
-        void Confirm_Clicked(object sender, EventArgs e)
+        async void Confirm_Clicked(object sender, EventArgs e)
         { 
-            _testGeneratorService.GenerateUnitTest(_unitTestName.Text, _currentMethod, _document);
+            await _testGeneratorService.GenerateUnitTest(_unitTestName.Text, _currentMethod, _document);
             Hide();
         }
 
