@@ -3,6 +3,7 @@ Visual studio for Mac extension to generate unit tests from a method
 
 ## About
 This extension was created to facilitate the creation of unit tests (Currently in the context of Xamarin.Forms).
+Currently, this extension only supports generation of NUnit tests.
 
 ## Usage
 * Install the extension from the generated mpack file
