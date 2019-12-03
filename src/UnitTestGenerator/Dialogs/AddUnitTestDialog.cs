@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Gtk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -24,7 +25,7 @@ namespace UnitTestGenerator.Dialogs
 
         public AddUnitTestDialog(MonoDevelop.Ide.Gui.Document document, MethodDeclarationSyntax currentMethod)
         {
-            _testGeneratorService = CompositionManager.GetExportedValue<ITestGeneratorService>();
+            _testGeneratorService = CompositionManager.Instance.GetExportedValue<ITestGeneratorService>();
             _currentMethod = currentMethod;
             _document = document;
             WindowPosition = WindowPosition.CenterAlways;
@@ -37,6 +38,7 @@ namespace UnitTestGenerator.Dialogs
             };
 
             _unitTestName = new Entry();
+            _unitTestName.Activated += EntryActivated;
 
             //button setup
             _confirm = new Button
@@ -52,6 +54,8 @@ namespace UnitTestGenerator.Dialogs
             VBox.ShowAll();
         }
 
+        async void EntryActivated(object sender, EventArgs e) => await CreateTest();
+
         protected override void OnShown()
         {
             GrabFocus();
@@ -59,8 +63,10 @@ namespace UnitTestGenerator.Dialogs
             base.OnShown();
         }
 
-        async void Confirm_Clicked(object sender, EventArgs e)
-        { 
+        async void Confirm_Clicked(object sender, EventArgs e) => await CreateTest();
+
+        async Task CreateTest()
+        {
             await _testGeneratorService.GenerateUnitTest(_unitTestName.Text, _currentMethod, _document);
             Hide();
         }

@@ -27,8 +27,8 @@ namespace UnitTestGenerator.Services.Implementations
         readonly IFileService _fileService;
         public TestGeneratorService()
         {
-            _configurationService = CompositionManager.GetExportedValue<IConfigurationService>();
-            _fileService = CompositionManager.GetExportedValue<IFileService>();
+            _configurationService = CompositionManager.Instance.GetExportedValue<IConfigurationService>();
+            _fileService = CompositionManager.Instance.GetExportedValue<IFileService>();
         }
 
         public async Task<GeneratedTest> CreateGeneratedTestModel(MethodDeclarationSyntax method)
@@ -80,7 +80,7 @@ namespace UnitTestGenerator.Services.Implementations
                 var textView = document.GetContent<ITextView>();
 
                 var caretOffset = textView.Caret.Position.BufferPosition;
-                if (analysisDocument.TryGetSemanticModel(out _) && analysisDocument.TryGetSyntaxTree(out var ast))
+                if (analysisDocument.TryGetSyntaxTree(out var ast))
                 {
                     var syntaxRoot = ast.GetRoot();
                     var span = TextSpan.FromBounds(caretOffset, caretOffset + 1);
@@ -131,7 +131,7 @@ namespace UnitTestGenerator.Services.Implementations
                     return null;
                 }
             }
-            var document = IdeApp.Workbench.OpenDocument(file.FilePath, unitTestProject, true).Result;
+            var document = await IdeApp.Workbench.OpenDocument(file.FilePath, unitTestProject, true);
             return document;
         }
 
@@ -196,7 +196,7 @@ namespace UnitTestGenerator.Services.Implementations
                           parameterList: SyntaxFactory.ParameterList(),
                           constraintClauses: SyntaxFactory.List<TypeParameterConstraintClauseSyntax>(),
                           body: SyntaxFactory.Block(),
-                          semicolonToken: SyntaxFactory.Token(SyntaxKind.SemicolonToken))
+                          semicolonToken: SyntaxFactory.Token(SyntaxKind.None))
                   // Annotate that this node should be formatted
                   .WithAdditionalAnnotations(Formatter.Annotation)
                   .WithAttributeLists(

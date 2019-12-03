@@ -14,7 +14,7 @@ namespace UnitTestGenerator.Services.Implementations
         readonly IConfigurationService _configurationService;
         public FileService()
         {
-            _configurationService = CompositionManager.GetExportedValue<IConfigurationService>();
+            _configurationService = CompositionManager.Instance.GetExportedValue<IConfigurationService>();
         }
 
         public async Task GenerateFile(string namespaceId, string classId, string filePath)

@@ -16,8 +16,8 @@ namespace UnitTestGenerator.Commands
 
         public GenerateUnitTestCommand()
         {
-            _testGeneratorService = CompositionManager.GetExportedValue<ITestGeneratorService>();
-            _configurationService = CompositionManager.GetExportedValue<IConfigurationService>();
+            _testGeneratorService = CompositionManager.Instance.GetExportedValue<ITestGeneratorService>();
+            _configurationService = CompositionManager.Instance.GetExportedValue<IConfigurationService>();
         }
 
         protected override void Update(CommandInfo info)
