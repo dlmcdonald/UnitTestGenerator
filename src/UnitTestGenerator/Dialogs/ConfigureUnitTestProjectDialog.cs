@@ -21,7 +21,7 @@ namespace UnitTestGenerator.Dialogs
         {
             WindowPosition = WindowPosition.CenterAlways;
             Title = "Configure UnitTest project";
-            _configurationService = CompositionManager.GetExportedValue<IConfigurationService>();
+            _configurationService = CompositionManager.Instance.GetExportedValue<IConfigurationService>();
 
 
             //TreeView setup
