@@ -10,8 +10,8 @@ namespace UnitTestGenerator.Services.Interfaces
         Task<GeneratedTest> CreateGeneratedTestModel(MethodDeclarationSyntax method);
         MethodDeclarationSyntax GetActiveMethodDeclarationSyntax();
         Task<MonoDevelop.Ide.Gui.Document> OpenDocument(GeneratedTest generatedTestModel);
-        Task GenerateUnitTest(string unitTestName, MethodDeclarationSyntax currentMethod, MonoDevelop.Ide.Gui.Document document);
-        MethodDeclarationSyntax GenerateUnitTestMethodDeclaration(string returnTypeName, SyntaxTokenList modifiers, string methodName);
+        Task GenerateUnitTest(string unitTestName, MethodDeclarationSyntax currentMethod, MonoDevelop.Ide.Gui.Document document, GeneratedTest generatedTestModel);
+        MethodDeclarationSyntax GenerateUnitTestMethodDeclaration(string returnTypeName, SyntaxTokenList modifiers, string methodName, GeneratedTest generatedTestModel);
         UsingDirectiveSyntax GenerateTaskUsingSyntax();
     }
 }

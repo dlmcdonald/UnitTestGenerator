@@ -67,14 +67,16 @@ namespace UnitTestGenerator.Commands
 
             
             var currentMethod = _testGeneratorService.GetActiveMethodDeclarationSyntax();
+            
             if (currentMethod == null)
                 return;
+
             var generatedTestModel = await _testGeneratorService.CreateGeneratedTestModel(currentMethod);
             var document = await _testGeneratorService.OpenDocument(generatedTestModel);
 
 
 
-            var addTestDialog = new AddUnitTestDialog(document, currentMethod);
+            var addTestDialog = new AddUnitTestDialog(document, currentMethod, generatedTestModel);
             addTestDialog.Show();
 
             base.Run();
