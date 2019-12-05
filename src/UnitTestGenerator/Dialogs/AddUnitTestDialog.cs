@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Gtk;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Formatting;
-using Microsoft.CodeAnalysis.Text;
-using Microsoft.VisualStudio.Text;
 using MonoDevelop.Ide.Composition;
-using UnitTestGenerator.Helpers;
+using UnitTestGenerator.Models;
 using UnitTestGenerator.Services.Interfaces;
 
 namespace UnitTestGenerator.Dialogs
@@ -22,12 +16,14 @@ namespace UnitTestGenerator.Dialogs
         readonly Button _confirm;
         readonly MonoDevelop.Ide.Gui.Document _document;
         readonly ITestGeneratorService _testGeneratorService;
+        readonly GeneratedTest _generatedTestModel;
 
-        public AddUnitTestDialog(MonoDevelop.Ide.Gui.Document document, MethodDeclarationSyntax currentMethod)
+        public AddUnitTestDialog(MonoDevelop.Ide.Gui.Document document, MethodDeclarationSyntax currentMethod, GeneratedTest generatedTestModel)
         {
             _testGeneratorService = CompositionManager.Instance.GetExportedValue<ITestGeneratorService>();
             _currentMethod = currentMethod;
             _document = document;
+            _generatedTestModel = generatedTestModel;
             WindowPosition = WindowPosition.CenterAlways;
             Title = "Add Unit test method";
 
@@ -67,7 +63,7 @@ namespace UnitTestGenerator.Dialogs
 
         async Task CreateTest()
         {
-            await _testGeneratorService.GenerateUnitTest(_unitTestName.Text, _currentMethod, _document);
+            await _testGeneratorService.GenerateUnitTest(_unitTestName.Text, _currentMethod, _document, _generatedTestModel);
             Hide();
         }
 
