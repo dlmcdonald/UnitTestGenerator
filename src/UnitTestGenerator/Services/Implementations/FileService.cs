@@ -20,7 +20,7 @@ namespace UnitTestGenerator.Services.Implementations
         public async Task GenerateFile(string namespaceId, string classId, string filePath)
         {
             var config = await _configurationService.GetConfiguration();
-            var lines = new List<string> { "using System;",
+            var lines = new List<string> { 
                 "using Moq;",
                 "using NUnit.Framework;",
                 "",
@@ -29,22 +29,20 @@ namespace UnitTestGenerator.Services.Implementations
                 "\t[TestFixture]",
                 $"\tpublic class {classId}",
                 "\t{",
-                "\t\t[SetUp]"};
-            if (config.UseCustomSetupMethod && config.CustomSetupMethodLines != null && config.CustomSetupMethodLines.Any())
+                "\t\t[SetUp]",
+                "\t\tpublic void Setup()",
+                "\t\t{",
+            };
+            if (config.CustomSetupMethodLines != null && config.CustomSetupMethodLines.Any())
             {
-                    lines.Add("\t\tpublic void Setup()");
-                    lines.Add("\t\t{");
+                    
                     foreach (var line in config.CustomSetupMethodLines)
                     {
                         lines.Add($"\t\t\t{line}");
                     }
-                    lines.Add("\t\t}");
+                    
             }
-            else
-            {
-                //use default
-                lines.Add("\t\tpublic void Setup() => Xamarin.Forms.Mocks.MockForms.Init();");
-            }
+            lines.Add("\t\t}");
 
             lines.AddRange(new List<string>{
                 "",
