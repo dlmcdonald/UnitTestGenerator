@@ -1,5 +1,4 @@
-﻿using System;
-namespace UnitTestGenerator.Models
+﻿namespace UnitTestGenerator.Models
 {
     public class Parameter
     {

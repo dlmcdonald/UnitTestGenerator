@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using GLib;
 
 namespace UnitTestGenerator.Models
@@ -16,5 +17,19 @@ namespace UnitTestGenerator.Models
         public List<Parameter> MethodParameters { get; set; }
         public bool IsTask { get; set; }
         public string ReturnType { get; set; }
+        public List<string> RequiredNamespaces { get; set; }
+
+        public void AddNamespaces(List<string> namespaceList)
+        {
+            if (RequiredNamespaces == null)
+                RequiredNamespaces = new List<string>();
+            if (namespaceList == null || !namespaceList.Any())
+                return;
+            foreach (var namespaceItem in namespaceList)
+            {
+                if (!string.IsNullOrWhiteSpace(namespaceItem) && !RequiredNamespaces.Contains(namespaceItem))
+                    RequiredNamespaces.Add(namespaceItem);
+            }
+        }
     }
 }

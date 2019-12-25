@@ -4,7 +4,6 @@ using System.Composition;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Gtk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -33,11 +32,12 @@ namespace UnitTestGenerator.Services.Implementations
             _fileService = CompositionManager.Instance.GetExportedValue<IFileService>();
         }
 
-        public async Task<GeneratedTest> CreateGeneratedTestModel(MethodDeclarationSyntax method)
+        public async Task<GeneratedTest> CreateGeneratedTestModel(MethodDeclarationSyntax method, MonoDevelop.Ide.Gui.Document initialDocument)
         {
             //Get the configuration model
             var config = await _configurationService.GetConfiguration();
             var generatedTest = new GeneratedTest();
+            generatedTest.RequiredNamespaces = new List<string>();
 
             var projects = IdeApp.Workspace.GetAllProjects();
             var unitTestProject = projects.FirstOrDefault(p => p.Name == config.UnitTestProjectName);
@@ -73,20 +73,49 @@ namespace UnitTestGenerator.Services.Implementations
             generatedTest.ClassName = classSyntax.Identifier.Text;
             generatedTest.MethodName = method.Identifier.Text;
 
+            //Get the symantic model in order to resolve namespaces
+            var analysisDoc = initialDocument.GetAnalysisDocument();
+            var editor = await DocumentEditor.CreateAsync(analysisDoc);
+            var sematicModel = editor.SemanticModel;
+
+            //class namespace
+            
+            generatedTest.RequiredNamespaces.Add(namespaceSyntax.Name.ToString());
+
             //class constructor parameters
             var classConstructor = classSyntax.DescendantNodes().OfType<ConstructorDeclarationSyntax>().FirstOrDefault();
 
-            if (classConstructor.ParameterList != null && classConstructor.ParameterList.Parameters != null && classConstructor.ParameterList.Parameters.Any())
+            if (classConstructor != null && classConstructor.ParameterList != null && classConstructor.ParameterList.Parameters != null && classConstructor.ParameterList.Parameters.Any())
             {
                 generatedTest.ClassConstructorParameters = new List<Parameter>();
                 foreach (var parameter in classConstructor.ParameterList.Parameters)
                 {
-                    var identifier = parameter.Type as IdentifierNameSyntax;
-                    generatedTest.ClassConstructorParameters.Add(new Parameter
+                    if (parameter.Type is IdentifierNameSyntax ins)
                     {
-                        Name = parameter.Identifier.Text,
-                        ClassName = identifier.Identifier.Text
-                    });
+                        generatedTest.ClassConstructorParameters.Add(new Parameter
+                        {
+                            Name = parameter.Identifier.Text,
+                            ClassName = ins.Identifier.Text
+                        });
+                        generatedTest.AddNamespaces(GetNamespacesForIdentifier(ins, sematicModel));
+                    }
+                    else if (parameter.Type is PredefinedTypeSyntax pds)
+                    {
+                        generatedTest.ClassConstructorParameters.Add(new Parameter
+                        {
+                            Name = parameter.Identifier.Text,
+                            ClassName = pds.ToString()
+                        });
+                    }
+                    else if (parameter.Type is GenericNameSyntax ns)
+                    {
+                        generatedTest.AddNamespaces(GetNamespacesForIdentifier(ns, sematicModel));
+                        generatedTest.ClassConstructorParameters.Add(new Parameter
+                        {
+                            Name = parameter.Identifier.Text,
+                            ClassName = ns.Identifier.Text
+                        });
+                    }
                 }
             }
 
@@ -98,11 +127,17 @@ namespace UnitTestGenerator.Services.Implementations
                 {
                     var className = "";
                     if (parameter.Type is IdentifierNameSyntax ins)
+                    {
                         className = ins.Identifier.Text;
+                        generatedTest.AddNamespaces(GetNamespacesForIdentifier(ins, sematicModel));
+                    }
                     else if (parameter.Type is PredefinedTypeSyntax pds)
                         className = pds.ToString();
                     else if (parameter.Type is GenericNameSyntax ns)
+                    {
                         className = ns.ToString();
+                        generatedTest.AddNamespaces(GetNamespacesForIdentifier(ns, sematicModel));
+                    }
                     generatedTest.MethodParameters.Add(new Parameter
                     {
                         Name = parameter.Identifier.Text,
@@ -130,16 +165,19 @@ namespace UnitTestGenerator.Services.Implementations
                     }
                     generatedTest.ReturnType = rType;
                 }
+                generatedTest.AddNamespaces(GetNamespacesForIdentifier(method.ReturnType, sematicModel));
             }
             else if (method.ReturnType is IdentifierNameSyntax ins)
             {
                 isTask |= ins.Identifier.Text.Equals("Task");
                 generatedTest.ReturnType = ins.ToString().Equals("Task") ? null : ins.ToString();
+                generatedTest.AddNamespaces(GetNamespacesForIdentifier(method.ReturnType, sematicModel));
             }
             else if (method.ReturnType is PredefinedTypeSyntax pns)
             {
                 generatedTest.ReturnType = pns.ToString().Equals("void") ? null : pns.ToString();
             }
+            
             generatedTest.IsTask = isTask;
             return generatedTest;
         }
@@ -225,19 +263,30 @@ namespace UnitTestGenerator.Services.Implementations
             var cuRoot = editor.SemanticModel.SyntaxTree.GetCompilationUnitRoot();
             if (cuRoot == null)
                 return;
+
+            //add required using statements that havent already been added
+            if (generatedTestModel.RequiredNamespaces != null && generatedTestModel.RequiredNamespaces.Any())
+            {
+                var usingNames = cuRoot.Usings.Select(u => u.Name.ToString());
+                var requiredUsings = new List<UsingDirectiveSyntax>();
+                foreach (var usingStatement in generatedTestModel.RequiredNamespaces)
+                {
+                    if (!usingNames.Contains(usingStatement))
+                        requiredUsings.Add(GenerateUsingSyntax(usingStatement));
+                }
+                if (requiredUsings.Any())
+                {
+                    var updatedRoot = cuRoot.AddUsings(requiredUsings.ToArray());
+                    editor.ReplaceNode(cuRoot, updatedRoot);
+                    cuRoot = updatedRoot;
+                }
+
+            }
+
             var lastMethod = cuRoot.DescendantNodes().OfType<MethodDeclarationSyntax>().LastOrDefault();
             editor.InsertAfter(lastMethod, newMethod);
 
-            if (generatedTestModel.IsTask)
-            {
-                var taskUsing = cuRoot.Usings.FirstOrDefault(u => u.Name.ToString().Contains("System.Threading.Tasks"));
-                if (taskUsing == null)
-                {
-                    taskUsing = GenerateTaskUsingSyntax();
-                    var lastUsing = cuRoot.Usings.LastOrDefault();
-                    editor.InsertAfter(lastUsing, taskUsing);
-                }
-            }
+            
 
             var newDocument = editor.GetChangedDocument();
 
@@ -254,7 +303,6 @@ namespace UnitTestGenerator.Services.Implementations
             var generateResult = true;
             var bodyStatements = new List<StatementSyntax>();
             
-            var ctorParams = "";
             var addedArrange = false;
 
             if (generateResult && !string.IsNullOrWhiteSpace(generatedTestModel.ReturnType))
@@ -279,17 +327,21 @@ namespace UnitTestGenerator.Services.Implementations
                 }
             }
 
-            foreach (var parameter in generatedTestModel.ClassConstructorParameters)
+            var ctorParams = "";
+            if (generatedTestModel.ClassConstructorParameters != null && generatedTestModel.ClassConstructorParameters.Any())
             {
-
-                if (!addedArrange)
+                foreach (var parameter in generatedTestModel.ClassConstructorParameters)
                 {
-                    bodyStatements.Add(SyntaxFactory.ParseStatement($"var {parameter.Name} = new Mock<{parameter.ClassName}>();\n").WithLeadingTrivia(SyntaxFactory.Comment("//Arrange\n")));
-                    addedArrange = true;
+
+                    if (!addedArrange)
+                    {
+                        bodyStatements.Add(SyntaxFactory.ParseStatement($"var {parameter.Name} = new Mock<{parameter.ClassName}>();\n").WithLeadingTrivia(SyntaxFactory.Comment("//Arrange\n")));
+                        addedArrange = true;
+                    }
+                    else
+                        bodyStatements.Add(SyntaxFactory.ParseStatement($"var {parameter.Name} = new Mock<{parameter.ClassName}>();\n"));
+                    ctorParams += $"{parameter.Name}.Object, ";
                 }
-                else
-                    bodyStatements.Add(SyntaxFactory.ParseStatement($"var {parameter.Name} = new Mock<{parameter.ClassName}>();\n"));
-                ctorParams += $"{parameter.Name}.Object, ";
             }
 
 
@@ -342,8 +394,42 @@ namespace UnitTestGenerator.Services.Implementations
         public UsingDirectiveSyntax GenerateTaskUsingSyntax()
         {
             var qualifiedName = SyntaxFactory.ParseName(" System.Threading.Tasks");
-            var usingSmnt = SyntaxFactory.UsingDirective(qualifiedName);
+            var usingSmnt = SyntaxFactory.UsingDirective(qualifiedName).WithTrailingTrivia(SyntaxFactory.Whitespace("\n"));
             return usingSmnt;
         }
+
+        public UsingDirectiveSyntax GenerateUsingSyntax(string namespaceName)
+        {
+            var qualifiedName = SyntaxFactory.ParseName($" {namespaceName}");
+            var usingSmnt = SyntaxFactory.UsingDirective(qualifiedName).WithTrailingTrivia(SyntaxFactory.Whitespace("\n"));
+            return usingSmnt;
+        }
+
+        public List<string> GetNamespacesForIdentifier(TypeSyntax ts, SemanticModel semanticModel)
+        {
+            var namespaceList = new List<string>();
+            var typeInfo = semanticModel.GetTypeInfo(ts);
+            var namespaceInfo = ((INamedTypeSymbol)typeInfo.Type).ContainingNamespace;
+            if (namespaceInfo != null)
+                namespaceList.Add(namespaceInfo.ToString());
+
+            if (ts is GenericNameSyntax gns)
+            {
+                if (gns.TypeArgumentList.Arguments.Any())
+                {
+                    foreach (var argument in gns.TypeArgumentList.Arguments)
+                    {
+                        var nestedNamespaces = GetNamespacesForIdentifier(argument, semanticModel);
+                        if (nestedNamespaces.Any())
+                            namespaceList.AddRange(nestedNamespaces);
+                    }
+                }
+                
+            }
+
+            return namespaceList;
+        }
+
+        
     }
 }

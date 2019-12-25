@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using MonoDevelop.Components.Commands;
+using MonoDevelop.Ide;
 using MonoDevelop.Ide.Composition;
 using UnitTestGenerator.Dialogs;
 using UnitTestGenerator.Services.Interfaces;
@@ -59,6 +60,7 @@ namespace UnitTestGenerator.Commands
         protected override async void Run()
         {
             var config = await _configurationService.GetConfiguration();
+            var initialDocument = IdeApp.Workbench.ActiveDocument;
             if (string.IsNullOrWhiteSpace(config.UnitTestProjectName))
             {
                 var dialog = new ConfigureUnitTestProjectDialog();
@@ -71,7 +73,7 @@ namespace UnitTestGenerator.Commands
             if (currentMethod == null)
                 return;
 
-            var generatedTestModel = await _testGeneratorService.CreateGeneratedTestModel(currentMethod);
+            var generatedTestModel = await _testGeneratorService.CreateGeneratedTestModel(currentMethod, initialDocument);
             var document = await _testGeneratorService.OpenDocument(generatedTestModel);
 
 

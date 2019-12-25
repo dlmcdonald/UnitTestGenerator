@@ -20,10 +20,18 @@ namespace UnitTestGenerator.Services.Implementations
         public async Task GenerateFile(string namespaceId, string classId, string filePath)
         {
             var config = await _configurationService.GetConfiguration();
-            var lines = new List<string> { 
-                "using Moq;",
-                "using NUnit.Framework;",
-                "",
+            var lines = new List<string>();
+
+            if (config.DefaultUsings != null && config.DefaultUsings.Any())
+            {
+                foreach (var usingStatement in config.DefaultUsings)
+                {
+                    lines.Add($"using {usingStatement};");
+                }
+                lines.Add("");
+            }
+
+            lines.AddRange(new List<string> {
                 $"namespace {namespaceId}",
                 "{",
                 "\t[TestFixture]",
@@ -32,15 +40,19 @@ namespace UnitTestGenerator.Services.Implementations
                 "\t\t[SetUp]",
                 "\t\tpublic void Setup()",
                 "\t\t{",
-            };
+            });
             if (config.CustomSetupMethodLines != null && config.CustomSetupMethodLines.Any())
             {
-                    
-                    foreach (var line in config.CustomSetupMethodLines)
-                    {
-                        lines.Add($"\t\t\t{line}");
-                    }
-                    
+
+                foreach (var line in config.CustomSetupMethodLines)
+                {
+                    lines.Add($"\t\t\t{line}");
+                }
+
+            }
+            else
+            {
+                lines.Add("\t\t\t");
             }
             lines.Add("\t\t}");
 
@@ -53,6 +65,6 @@ namespace UnitTestGenerator.Services.Implementations
             File.WriteAllLines(file.FullName, lines);
         }
 
-        
+
     }
 }
