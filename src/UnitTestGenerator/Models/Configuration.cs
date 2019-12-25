@@ -15,6 +15,8 @@ namespace UnitTestGenerator.Models
         public string UnitTestClassSuffix { get; set; }
         [JsonProperty("custom_setup_method_lines")]
         public List<string> CustomSetupMethodLines { get; set; }
+        [JsonProperty("default_using_statements")]
+        public List<string> DefaultUsings { get; set; }
 
 
         public static Configuration DefaultConfiguration()
@@ -25,7 +27,12 @@ namespace UnitTestGenerator.Models
                 UnitTestProjectName = "",
                 UnitTestSuffix = "Should",
                 UnitTestClassSuffix = "Tests",
-                CustomSetupMethodLines = new List<string>()
+                CustomSetupMethodLines = new List<string>(),
+                DefaultUsings = new List<string>
+                {
+                    "Moq",
+                    "NUnit.Framework"
+                }
             };
         }
     }

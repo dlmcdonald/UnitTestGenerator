@@ -29,6 +29,7 @@ Currently, this extension only supports generation of NUnit tests and uses Moq t
   * Constructor initialization
   * `result` variable assigned to the method call
   * A default assert
+  * All the using statements based on the classes used in your method and constructor
 
 
 
