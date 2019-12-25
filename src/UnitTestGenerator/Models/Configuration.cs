@@ -13,8 +13,6 @@ namespace UnitTestGenerator.Models
         public string UnitTestSuffix { get; set; }
         [JsonProperty("unittest_class_suffix")]
         public string UnitTestClassSuffix { get; set; }
-        [JsonProperty("use_custom_setup_method")]
-        public bool UseCustomSetupMethod { get; set; }
         [JsonProperty("custom_setup_method_lines")]
         public List<string> CustomSetupMethodLines { get; set; }
 
