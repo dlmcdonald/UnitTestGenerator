@@ -85,17 +85,26 @@ namespace UnitTestGenerator.Services.Implementations
             //class constructor parameters
             var classConstructor = classSyntax.DescendantNodes().OfType<ConstructorDeclarationSyntax>().FirstOrDefault();
 
-            if (classConstructor != null && classConstructor.ParameterList != null && classConstructor.ParameterList.Parameters != null && classConstructor.ParameterList.Parameters.Any())
+            if (classConstructor != null && classConstructor.ParameterList != null && classConstructor.ParameterList.Parameters.Any())
             {
                 generatedTest.ClassConstructorParameters = new List<Parameter>();
                 foreach (var parameter in classConstructor.ParameterList.Parameters)
                 {
                     if (parameter.Type is IdentifierNameSyntax ins)
                     {
+                        var isInterface = false;
+                        var typeInfo = sematicModel.GetTypeInfo(ins);
+                        if (typeInfo.Type is INamedTypeSymbol namedType)
+                        {
+                            if (namedType.TypeKind == TypeKind.Interface)
+                                isInterface = true;
+                        }
+
                         generatedTest.ClassConstructorParameters.Add(new Parameter
                         {
                             Name = parameter.Identifier.Text,
-                            ClassName = ins.Identifier.Text
+                            ClassName = ins.Identifier.Text,
+                            IsInterface = isInterface
                         });
                         generatedTest.AddNamespaces(GetNamespacesForIdentifier(ins, sematicModel));
                     }
@@ -335,12 +344,28 @@ namespace UnitTestGenerator.Services.Implementations
 
                     if (!addedArrange)
                     {
-                        bodyStatements.Add(SyntaxFactory.ParseStatement($"var {parameter.Name} = new Mock<{parameter.ClassName}>();\n").WithLeadingTrivia(SyntaxFactory.Comment("//Arrange\n")));
+                        if (parameter.IsInterface)
+                        {
+                            bodyStatements.Add(SyntaxFactory.ParseStatement($"var {parameter.Name} = new Mock<{parameter.ClassName}>();\n").WithLeadingTrivia(SyntaxFactory.Comment("//Arrange\n")));
+                        }
+                        else
+                        {
+                            bodyStatements.Add(SyntaxFactory.ParseStatement($"var {parameter.Name} = default({parameter.ClassName});\n").WithLeadingTrivia(SyntaxFactory.Comment("//Arrange\n")));
+                        }
                         addedArrange = true;
                     }
                     else
-                        bodyStatements.Add(SyntaxFactory.ParseStatement($"var {parameter.Name} = new Mock<{parameter.ClassName}>();\n"));
-                    ctorParams += $"{parameter.Name}.Object, ";
+                    {
+                        if (parameter.IsInterface)
+                        {
+                            bodyStatements.Add(SyntaxFactory.ParseStatement($"var {parameter.Name} = new Mock<{parameter.ClassName}>();\n"));
+                        }
+                        else
+                        {
+                            bodyStatements.Add(SyntaxFactory.ParseStatement($"var {parameter.Name} = default({parameter.ClassName});\n"));
+                        }
+                    }
+                    ctorParams += parameter.IsInterface ? $"{parameter.Name}.Object, " : $"{parameter.Name}, ";
                 }
             }
 
@@ -360,7 +385,7 @@ namespace UnitTestGenerator.Services.Implementations
                 }
                 else
                 {
-                    bodyStatements.Add(SyntaxFactory.ParseStatement("Assert.That(true == true);\n").WithLeadingTrivia(SyntaxFactory.Comment("//Assert\n")));
+                    bodyStatements.Add(SyntaxFactory.ParseStatement("Assert.That(true);\n").WithLeadingTrivia(SyntaxFactory.Comment("//Assert\n")));
                 }
             }
 
