@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 using MonoDevelop.Ide.Editor;
 
-namespace UnitTestGenerator.Helpers
+namespace UnitTestGenerator.Mac.Helpers
 {
     public static class DocumentExtensionMethods
     {

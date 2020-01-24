@@ -4,9 +4,9 @@ using Gtk;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using MonoDevelop.Ide.Composition;
 using UnitTestGenerator.Models;
-using UnitTestGenerator.Services.Interfaces;
+using UnitTestGenerator.Mac.Services.Interfaces;
 
-namespace UnitTestGenerator.Dialogs
+namespace UnitTestGenerator.Mac.Dialogs
 {
     public class AddUnitTestDialog : Dialog
     {

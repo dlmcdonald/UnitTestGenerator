@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using UnitTestGenerator.Models;
 
-namespace UnitTestGenerator.Services.Interfaces
+namespace UnitTestGenerator.Mac.Services.Interfaces
 {
     public interface IConfigurationService
     {

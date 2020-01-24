@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using UnitTestGenerator.Models;
 
-namespace UnitTestGenerator.Services.Interfaces
+namespace UnitTestGenerator.Mac.Services.Interfaces
 {
     public interface ITestGeneratorService
     {

@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <ReleaseVersion>0.1.1</ReleaseVersion>
+    <SynchReleaseVersion>false</SynchReleaseVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MonoDevelop.Addins" Version="0.4.7" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Commands\" />
+    <Folder Include="Dialogs\" />
+    <Folder Include="Helpers\" />
+    <Folder Include="Templates\" />
+    <Folder Include="Services\" />
+    <Folder Include="Services\Interfaces\" />
+    <Folder Include="Services\Implementations\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Templates\XFUnitTestNUnit.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <AddinFile Include="Templates\XFUnitTestNUnit.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AddinFile>
+    <AddinFile Include="Templates\XFUnitTestNUnit.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AddinFile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Templates\XFUnitTestNUnit.xml" />
+    <None Remove="UnitTestGenerator.Core\obj\Debug\UnitTestGenerator.Core.csprojAssemblyReference.cache" />
+  </ItemGroup>
+  <ItemGroup>
+    <AddinReference Include="MonoDevelop.CSharpBinding" />
+    <AddinReference Include="MonoDevelop.TextEditor" />
+    <AddinReference Include="MonoDevelop.Xamarin.Ide" />
+    <AddinReference Include="MonoDevelop.SourceEditor2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UnitTestGenerator\UnitTestGenerator.csproj" />
+  </ItemGroup>
+</Project>
