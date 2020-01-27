@@ -211,7 +211,7 @@ namespace UnitTestGenerator.QuickInfo
                     elements.Add(new ClassifiedTextElement(
                         new ClassifiedTextRun(
                                             ClassificationTypeNames.MethodName,
-                                            $"\t{methodReference.MethodName}", ()=> NavigateToDeclaration(methodReference.MethodSymbol), methodReference.MethodName)));
+                                            $"\t{methodReference.MethodName}")));
                     
                 }
             }
