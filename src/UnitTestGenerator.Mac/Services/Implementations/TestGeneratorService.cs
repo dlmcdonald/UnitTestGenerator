@@ -32,7 +32,7 @@ namespace UnitTestGenerator.Mac.Services.Implementations
             _fileService = CompositionManager.Instance.GetExportedValue<IFileService>();
         }
 
-        public async Task<GeneratedTest> CreateGeneratedTestModel(MethodDeclarationSyntax method, MonoDevelop.Ide.Gui.Document initialDocument)
+        public async Task<GeneratedTest> CreateGeneratedTestModel(MethodDeclarationSyntax method, Document analysisDocument)
         {
             //Get the configuration model
             var config = await _configurationService.GetConfiguration();
@@ -74,8 +74,7 @@ namespace UnitTestGenerator.Mac.Services.Implementations
             generatedTest.MethodName = method.Identifier.Text;
 
             //Get the symantic model in order to resolve namespaces
-            var analysisDoc = initialDocument.GetAnalysisDocument();
-            var editor = await DocumentEditor.CreateAsync(analysisDoc);
+            var editor = await DocumentEditor.CreateAsync(analysisDocument);
             var sematicModel = editor.SemanticModel;
 
             //class namespace

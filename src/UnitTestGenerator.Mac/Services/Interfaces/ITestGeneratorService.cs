@@ -7,7 +7,7 @@ namespace UnitTestGenerator.Mac.Services.Interfaces
 {
     public interface ITestGeneratorService
     {
-        Task<GeneratedTest> CreateGeneratedTestModel(MethodDeclarationSyntax method, MonoDevelop.Ide.Gui.Document initialDocument);
+        Task<GeneratedTest> CreateGeneratedTestModel(MethodDeclarationSyntax method, Document analysisDocument);
         MethodDeclarationSyntax GetActiveMethodDeclarationSyntax();
         Task<MonoDevelop.Ide.Gui.Document> OpenDocument(GeneratedTest generatedTestModel);
         Task GenerateUnitTest(string unitTestName, MethodDeclarationSyntax currentMethod, MonoDevelop.Ide.Gui.Document document, GeneratedTest generatedTestModel);

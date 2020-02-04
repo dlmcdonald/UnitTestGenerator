@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Xml;
 using Gtk;
+using Microsoft.CodeAnalysis;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Composition;
 using UnitTestGenerator.Mac.Services.Interfaces;
@@ -16,9 +19,11 @@ namespace UnitTestGenerator.Mac.Dialogs
         readonly List<string> _projects;
         readonly IConfigurationService _configurationService;
         string _selectedProject = "";
+        Solution _solution;
 
-        public ConfigureUnitTestProjectDialog()
+        public ConfigureUnitTestProjectDialog(Solution solution)
         {
+            _solution = solution;
             WindowPosition = WindowPosition.CenterAlways;
             Title = "Configure UnitTest project";
             _configurationService = CompositionManager.Instance.GetExportedValue<IConfigurationService>();
@@ -44,7 +49,8 @@ namespace UnitTestGenerator.Mac.Dialogs
             //project model
             var projectsData = new ListStore(typeof(string));
             _projectList.Model = projectsData;
-            _projects = IdeApp.Workspace.GetAllProjects().Select(p => p.Name).ToList();
+            _projects = _solution.Projects.Select(p => p.Name).ToList();
+            //_projects = IdeApp.Workspace.GetAllProjects().Select(p => p.Name).ToList();
             foreach (var proj in _projects)
             {
                 projectsData.AppendValues(proj);
@@ -96,11 +102,51 @@ namespace UnitTestGenerator.Mac.Dialogs
         {
             if (!string.IsNullOrWhiteSpace(_selectedProject))
             {
+                
+                var project = _solution.Projects.FirstOrDefault(p => p.Name.Equals(_selectedProject));
+                var projectType = "";
+                if (project != null)
+                {
+                    //determine the framework
+                    var references = GetPackageReferences(project);
+
+                    Debug.WriteLine("Got project dependecies");
+
+                    if (references.Contains("nunit"))
+                        projectType = "nunit";
+                    else if (references.Contains("xunit"))
+                        projectType = "xunit";
+                }
                 var config = await _configurationService.GetConfiguration();
                 config.UnitTestProjectName = _selectedProject;
+                config.TestFramework = string.IsNullOrWhiteSpace(projectType) ? "nunit" : projectType;
                 _configurationService.Save(config);
             }
             Hide();
+        }
+
+        List<string> GetPackageReferences(Project project)
+        {
+            var references = new List<string>();
+            var csproj = new XmlDocument();
+            try
+            {
+                csproj.Load(project.FilePath);
+                var nodes = csproj.SelectNodes("//PackageReference[@Include and @Version]");
+
+                foreach (XmlNode packageReference in nodes)
+                {
+                    var packageName = packageReference.Attributes["Include"].Value;
+                    references.Add(packageName);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("Got an exception while trying to load the selected project:");
+                Debug.WriteLine(e);
+            }
+
+            return references;
         }
 
     }
