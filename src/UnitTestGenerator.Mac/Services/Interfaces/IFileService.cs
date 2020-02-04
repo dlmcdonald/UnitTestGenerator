@@ -1,6 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
-namespace UnitTestGenerator.Services.Interfaces
+﻿using System.Threading.Tasks;
+namespace UnitTestGenerator.Mac.Services.Interfaces
 {
     public interface IFileService
     {

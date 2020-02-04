@@ -7,9 +7,9 @@ using MonoDevelop.Ide;
 using MonoDevelop.Projects;
 using Newtonsoft.Json;
 using UnitTestGenerator.Models;
-using UnitTestGenerator.Services.Interfaces;
+using UnitTestGenerator.Mac.Services.Interfaces;
 
-namespace UnitTestGenerator.Services.Implementations
+namespace UnitTestGenerator.Mac.Services.Implementations
 {
     [Export(typeof(IConfigurationService))]
     public class ConfigurationService : IConfigurationService

@@ -1,41 +1,25 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
-    <ReleaseVersion>0.1.1</ReleaseVersion>
-    <SynchReleaseVersion>false</SynchReleaseVersion>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="MonoDevelop.Addins" Version="0.4.7" />
+    <Reference Include="System.ComponentModel.Composition" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Language" Version="16.4.280" />
+    <PackageReference Include="Microsoft.VisualStudio.Language.StandardClassification" Version="16.4.280" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.UI" Version="16.4.280" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.4.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.4.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
+
   <ItemGroup>
-    <Folder Include="Commands\" />
-    <Folder Include="Dialogs\" />
-    <Folder Include="Helpers\" />
     <Folder Include="Models\" />
-    <Folder Include="Templates\" />
+    <Folder Include="QuickInfo\" />
     <Folder Include="Services\" />
-    <Folder Include="Services\Interfaces\" />
-    <Folder Include="Services\Implementations\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="Templates\XFUnitTestNUnit.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <AddinFile Include="Templates\XFUnitTestNUnit.cs">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </AddinFile>
-    <AddinFile Include="Templates\XFUnitTestNUnit.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </AddinFile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="Templates\XFUnitTestNUnit.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <AddinReference Include="MonoDevelop.CSharpBinding" />
-    <AddinReference Include="MonoDevelop.TextEditor" />
-    <AddinReference Include="MonoDevelop.Xamarin.Ide" />
-    <AddinReference Include="MonoDevelop.SourceEditor2" />
   </ItemGroup>
 </Project>

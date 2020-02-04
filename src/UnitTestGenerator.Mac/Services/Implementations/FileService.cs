@@ -3,10 +3,10 @@ using System.Composition;
 using System.IO;
 using System.Linq;
 using MonoDevelop.Ide.Composition;
-using UnitTestGenerator.Services.Interfaces;
+using UnitTestGenerator.Mac.Services.Interfaces;
 using System.Threading.Tasks;
 
-namespace UnitTestGenerator.Services.Implementations
+namespace UnitTestGenerator.Mac.Services.Implementations
 {
     [Export(typeof(IFileService))]
     public class FileService : IFileService

@@ -5,10 +5,10 @@ using Microsoft.CodeAnalysis;
 using MonoDevelop.Components.Commands;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Composition;
-using UnitTestGenerator.Dialogs;
-using UnitTestGenerator.Services.Interfaces;
+using UnitTestGenerator.Mac.Dialogs;
+using UnitTestGenerator.Mac.Services.Interfaces;
 
-namespace UnitTestGenerator.Commands
+namespace UnitTestGenerator.Mac.Commands
 {
     public class GenerateUnitTestCommand : CommandHandler
     {

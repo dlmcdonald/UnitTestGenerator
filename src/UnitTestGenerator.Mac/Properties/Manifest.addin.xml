@@ -11,24 +11,32 @@
     <Extension
         path="/MonoDevelop/Ide/Commands">
         <Command
-            id="UnitTestGenerator.Commands.GenerateUnitTestCommand"
+            id="UnitTestGenerator.Mac.Commands.GenerateUnitTestCommand"
             _label="Generate Unit Test"
-            defaultHandler="UnitTestGenerator.Commands.GenerateUnitTestCommand" />
+            defaultHandler="UnitTestGenerator.Mac.Commands.GenerateUnitTestCommand" />
     </Extension>
     <!-- Add Command To (New) TextEditor -->
     <Extension
         path="/MonoDevelop/TextEditor/ContextMenu/Editor">
         <CommandItem
-            id="UnitTestGenerator.Commands.GenerateUnitTestCommand" />
+            id="UnitTestGenerator.Mac.Commands.GenerateUnitTestCommand" />
     </Extension>
   <!-- Add Command to (Old) TextEditor -->
     <Extension
         path="/MonoDevelop/SourceEditor2/ContextMenu/Editor">
         <CommandItem
-            id="UnitTestGenerator.Commands.GenerateUnitTestCommand" />
+            id="UnitTestGenerator.Mac.Commands.GenerateUnitTestCommand" />
     </Extension>
   <!-- MEF Catalog -->
+  <Extension path="/MonoDevelop/Ide/TypeService/MefHostServices">
+        <Assembly file ="UnitTestGenerator.dll" />
+        <Assembly file="UnitTestGenerator.Mac.dll" />
+    </Extension>
+    <Extension path="/MonoDevelop/Ide/TypeService/PlatformMefHostServices">
+        <Assembly file ="UnitTestGenerator.dll" />
+        <Assembly file="UnitTestGenerator.Mac.dll" />
+    </Extension>
     <Extension path="/MonoDevelop/Ide/Composition">
-        <Assembly file="UnitTestGenerator.dll" />
+        <Assembly file="UnitTestGenerator.Mac.dll" />
     </Extension>
 </ExtensionModel>

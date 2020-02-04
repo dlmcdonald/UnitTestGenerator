@@ -1,7 +1,7 @@
 ﻿using System;
 using Gtk;
 
-namespace UnitTestGenerator.Dialogs
+namespace UnitTestGenerator.Mac.Dialogs
 {
     public class ErrorDialog : Dialog
     {

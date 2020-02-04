@@ -15,11 +15,11 @@ using Microsoft.VisualStudio.Text.Editor;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Composition;
 using MonoDevelop.Projects;
-using UnitTestGenerator.Helpers;
+using UnitTestGenerator.Mac.Helpers;
 using UnitTestGenerator.Models;
-using UnitTestGenerator.Services.Interfaces;
+using UnitTestGenerator.Mac.Services.Interfaces;
 
-namespace UnitTestGenerator.Services.Implementations
+namespace UnitTestGenerator.Mac.Services.Implementations
 {
     [Export(typeof(ITestGeneratorService))]
     public class TestGeneratorService : ITestGeneratorService

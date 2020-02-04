@@ -4,9 +4,9 @@ using System.Linq;
 using Gtk;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Composition;
-using UnitTestGenerator.Services.Interfaces;
+using UnitTestGenerator.Mac.Services.Interfaces;
 
-namespace UnitTestGenerator.Dialogs
+namespace UnitTestGenerator.Mac.Dialogs
 {
     public class ConfigureUnitTestProjectDialog : Dialog
     {
