@@ -30,14 +30,17 @@ namespace UnitTestGenerator.QuickInfo
 
         readonly IDocumentService _documentService;
         readonly INavigationService _navigationService;
+        readonly IConfigurationService _configurationService;
 
         Project _unitTestProject;
 
-        public RelatedTestsQuickInfoSource(ITextBuffer textBuffer, IDocumentService documentService, INavigationService navigationService)
+        public RelatedTestsQuickInfoSource(ITextBuffer textBuffer, IDocumentService documentService, INavigationService navigationService, IConfigurationService configurationService)
         {
             _textBuffer = textBuffer;
             _documentService = documentService;
             _navigationService = navigationService;
+            _configurationService = configurationService;
+
         }
 
         public void Dispose()
@@ -71,18 +74,20 @@ namespace UnitTestGenerator.QuickInfo
             IAsyncQuickInfoSession session,
             CancellationToken cancellationToken)
         {
-
+            var config = await _configurationService.GetConfiguration();
+            if (config == null || string.IsNullOrWhiteSpace(config.UnitTestProjectName))
+                return null;
             try
             {
-                var triggerPoint = session.GetTriggerPoint(this._textBuffer.CurrentSnapshot);
+                var triggerPoint = session.GetTriggerPoint(_textBuffer.CurrentSnapshot);
                 var line = triggerPoint.Value.GetContainingLine();
-                var lineSpan = this._textBuffer.CurrentSnapshot.CreateTrackingSpan(
+                var lineSpan = _textBuffer.CurrentSnapshot.CreateTrackingSpan(
                     line.Extent,
                     SpanTrackingMode.EdgeInclusive);
                 if (_documentService != null)
                 {
                     var currentDocument = _documentService.GetCurrentDocument();
-                    _unitTestProject = currentDocument.Project.Solution.Projects.FirstOrDefault(p => p.Name.Contains("UnitTest"));
+                    _unitTestProject = currentDocument.Project.Solution.Projects.FirstOrDefault(p => p.Name.Equals(config.UnitTestProjectName));
                     SyntaxNode syntaxRoot = null;
                     if (currentDocument.TryGetSyntaxTree(out var ast))
                     {

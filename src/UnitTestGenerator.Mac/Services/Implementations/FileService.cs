@@ -5,6 +5,7 @@ using System.Linq;
 using MonoDevelop.Ide.Composition;
 using UnitTestGenerator.Mac.Services.Interfaces;
 using System.Threading.Tasks;
+using UnitTestGenerator.Services;
 
 namespace UnitTestGenerator.Mac.Services.Implementations
 {

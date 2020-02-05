@@ -18,6 +18,7 @@ using MonoDevelop.Projects;
 using UnitTestGenerator.Mac.Helpers;
 using UnitTestGenerator.Models;
 using UnitTestGenerator.Mac.Services.Interfaces;
+using UnitTestGenerator.Services;
 
 namespace UnitTestGenerator.Mac.Services.Implementations
 {
@@ -406,7 +407,7 @@ namespace UnitTestGenerator.Mac.Services.Implementations
             {
                 if (!string.IsNullOrWhiteSpace(generatedTestModel.ReturnType))
                 {
-                    bodyStatements.Add(SyntaxFactory.ParseStatement($"Assert.Equal<{generatedTestModel.ReturnType}>(expected == result);\n").WithLeadingTrivia(SyntaxFactory.Comment("//Assert\n")));
+                    bodyStatements.Add(SyntaxFactory.ParseStatement($"Assert.Equal<{generatedTestModel.ReturnType}>(expected, result);\n").WithLeadingTrivia(SyntaxFactory.Comment("//Assert\n")));
                 }
                 else
                 {

@@ -8,6 +8,7 @@ using MonoDevelop.Ide.Composition;
 using UnitTestGenerator.Mac.Dialogs;
 using UnitTestGenerator.Mac.Helpers;
 using UnitTestGenerator.Mac.Services.Interfaces;
+using UnitTestGenerator.Services;
 
 namespace UnitTestGenerator.Mac.Commands
 {
