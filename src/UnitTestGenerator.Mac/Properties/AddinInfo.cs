@@ -27,7 +27,7 @@ using Mono.Addins.Description;
 [assembly: Addin(
     "UnitTestGenerator",
     Namespace = "UnitTestGenerator.Mac",
-    Version = "0.1.5"
+    Version = "0.2.0"
 )]
 
 [assembly: AddinName("UnitTestGenerator")]
