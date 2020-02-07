@@ -7,7 +7,7 @@ using MonoDevelop.Ide;
 using MonoDevelop.Projects;
 using Newtonsoft.Json;
 using UnitTestGenerator.Models;
-using UnitTestGenerator.Mac.Services.Interfaces;
+using UnitTestGenerator.Services;
 
 namespace UnitTestGenerator.Mac.Services.Implementations
 {

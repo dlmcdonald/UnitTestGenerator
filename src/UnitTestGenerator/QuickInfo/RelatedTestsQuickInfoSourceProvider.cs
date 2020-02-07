@@ -17,10 +17,12 @@
         readonly IDocumentService _documentService;
         [Import(typeof(INavigationService))]
         readonly INavigationService _navigationService;
+        [Import(typeof(IConfigurationService))]
+        readonly IConfigurationService _configurationService;
 
         public IAsyncQuickInfoSource TryCreateQuickInfoSource(ITextBuffer textBuffer)
         {
-            return new RelatedTestsQuickInfoSource(textBuffer, _documentService, _navigationService);
+            return new RelatedTestsQuickInfoSource(textBuffer, _documentService, _navigationService, _configurationService);
         }
     }
 }

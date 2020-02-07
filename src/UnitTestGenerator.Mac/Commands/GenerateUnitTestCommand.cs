@@ -6,7 +6,9 @@ using MonoDevelop.Components.Commands;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Composition;
 using UnitTestGenerator.Mac.Dialogs;
+using UnitTestGenerator.Mac.Helpers;
 using UnitTestGenerator.Mac.Services.Interfaces;
+using UnitTestGenerator.Services;
 
 namespace UnitTestGenerator.Mac.Commands
 {
@@ -61,9 +63,10 @@ namespace UnitTestGenerator.Mac.Commands
         {
             var config = await _configurationService.GetConfiguration();
             var initialDocument = IdeApp.Workbench.ActiveDocument;
+            var initialAnalysisDoc = initialDocument.GetAnalysisDocument();
             if (string.IsNullOrWhiteSpace(config.UnitTestProjectName))
             {
-                var dialog = new ConfigureUnitTestProjectDialog();
+                var dialog = new ConfigureUnitTestProjectDialog(initialAnalysisDoc.Project.Solution);
                 return;
             }
 
@@ -73,7 +76,7 @@ namespace UnitTestGenerator.Mac.Commands
             if (currentMethod == null)
                 return;
 
-            var generatedTestModel = await _testGeneratorService.CreateGeneratedTestModel(currentMethod, initialDocument);
+            var generatedTestModel = await _testGeneratorService.CreateGeneratedTestModel(currentMethod, initialAnalysisDoc);
             var document = await _testGeneratorService.OpenDocument(generatedTestModel);
 
 

@@ -18,6 +18,7 @@ using MonoDevelop.Projects;
 using UnitTestGenerator.Mac.Helpers;
 using UnitTestGenerator.Models;
 using UnitTestGenerator.Mac.Services.Interfaces;
+using UnitTestGenerator.Services;
 
 namespace UnitTestGenerator.Mac.Services.Implementations
 {
@@ -32,7 +33,7 @@ namespace UnitTestGenerator.Mac.Services.Implementations
             _fileService = CompositionManager.Instance.GetExportedValue<IFileService>();
         }
 
-        public async Task<GeneratedTest> CreateGeneratedTestModel(MethodDeclarationSyntax method, MonoDevelop.Ide.Gui.Document initialDocument)
+        public async Task<GeneratedTest> CreateGeneratedTestModel(MethodDeclarationSyntax method, Document analysisDocument)
         {
             //Get the configuration model
             var config = await _configurationService.GetConfiguration();
@@ -74,8 +75,7 @@ namespace UnitTestGenerator.Mac.Services.Implementations
             generatedTest.MethodName = method.Identifier.Text;
 
             //Get the symantic model in order to resolve namespaces
-            var analysisDoc = initialDocument.GetAnalysisDocument();
-            var editor = await DocumentEditor.CreateAsync(analysisDoc);
+            var editor = await DocumentEditor.CreateAsync(analysisDocument);
             var sematicModel = editor.SemanticModel;
 
             //class namespace
@@ -265,7 +265,11 @@ namespace UnitTestGenerator.Mac.Services.Implementations
             {
                 modifiers = SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword), SyntaxFactory.Token(SyntaxKind.AsyncKeyword));
             }
-            var newMethod = GenerateUnitTestMethodDeclaration(returnType, modifiers, unitTestName, generatedTestModel);
+            var config = await _configurationService.GetConfiguration();
+            var annotation = "Test";
+            if ("xunit".Equals(config.TestFramework))
+                annotation = "Fact";
+            var newMethod = GenerateUnitTestMethodDeclaration(returnType, modifiers, unitTestName, annotation, generatedTestModel);
 
             var analysisDoc = document.GetAnalysisDocument();
             var editor = await DocumentEditor.CreateAsync(analysisDoc);
@@ -293,7 +297,17 @@ namespace UnitTestGenerator.Mac.Services.Implementations
             }
 
             var lastMethod = cuRoot.DescendantNodes().OfType<MethodDeclarationSyntax>().LastOrDefault();
-            editor.InsertAfter(lastMethod, newMethod);
+
+            if (lastMethod != null)
+            {
+                editor.InsertAfter(lastMethod, newMethod);
+            }
+            else
+            {
+                var classDeclaration = cuRoot.DescendantNodes().OfType<ClassDeclarationSyntax>().First();
+                var newClassDeclaration = classDeclaration.AddMembers(newMethod);
+                editor.ReplaceNode(classDeclaration, newClassDeclaration);
+            }
 
             
 
@@ -307,14 +321,14 @@ namespace UnitTestGenerator.Mac.Services.Implementations
             await document.Save();
         }
 
-        public MethodDeclarationSyntax GenerateUnitTestMethodDeclaration(string returnTypeName, SyntaxTokenList modifiers, string methodName, GeneratedTest generatedTestModel)
+        public MethodDeclarationSyntax GenerateUnitTestMethodDeclaration(string returnTypeName, SyntaxTokenList modifiers, string methodName, string testFramework, GeneratedTest generatedTestModel)
         {
-            var generateResult = true;
+            var annotation = "nunit".Equals(testFramework) ? "Test" : "Fact";
             var bodyStatements = new List<StatementSyntax>();
             
             var addedArrange = false;
 
-            if (generateResult && !string.IsNullOrWhiteSpace(generatedTestModel.ReturnType))
+            if (!string.IsNullOrWhiteSpace(generatedTestModel.ReturnType))
             {
                 
                 bodyStatements.Add(SyntaxFactory.ParseStatement($"var expected = default({generatedTestModel.ReturnType});\n").WithLeadingTrivia(SyntaxFactory.Comment("//Arrange\n")));
@@ -373,12 +387,13 @@ namespace UnitTestGenerator.Mac.Services.Implementations
             var classCtor = SyntaxFactory.ParseStatement($"var vm = new {generatedTestModel.ClassName}({ctorParams.TrimEnd(' ').TrimEnd(',')});\n").WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
             bodyStatements.Add(classCtor);
 
-            if(generateResult)
-            {
-                var resultSection = string.IsNullOrWhiteSpace(generatedTestModel.ReturnType) ? "" : "var result = ";
-                var awaitSection = generatedTestModel.IsTask ? "await " : "";
-                bodyStatements.Add(SyntaxFactory.ParseStatement($"{resultSection}{awaitSection}vm.{generatedTestModel.MethodName}({methodParams.TrimEnd(' ').TrimEnd(',')});\n").WithLeadingTrivia(SyntaxFactory.Comment("//Act\n")));
+            var resultSection = string.IsNullOrWhiteSpace(generatedTestModel.ReturnType) ? "" : "var result = ";
+            var awaitSection = generatedTestModel.IsTask ? "await " : "";
+            bodyStatements.Add(SyntaxFactory.ParseStatement($"{resultSection}{awaitSection}vm.{generatedTestModel.MethodName}({methodParams.TrimEnd(' ').TrimEnd(',')});\n").WithLeadingTrivia(SyntaxFactory.Comment("//Act\n")));
 
+            //Generate the assert section
+            if ("nunit".Equals(testFramework))
+            {
                 if (!string.IsNullOrWhiteSpace(generatedTestModel.ReturnType))
                 {
                     bodyStatements.Add(SyntaxFactory.ParseStatement("Assert.That(expected == result);\n").WithLeadingTrivia(SyntaxFactory.Comment("//Assert\n")));
@@ -388,8 +403,17 @@ namespace UnitTestGenerator.Mac.Services.Implementations
                     bodyStatements.Add(SyntaxFactory.ParseStatement("Assert.That(true);\n").WithLeadingTrivia(SyntaxFactory.Comment("//Assert\n")));
                 }
             }
-
-           
+            else
+            {
+                if (!string.IsNullOrWhiteSpace(generatedTestModel.ReturnType))
+                {
+                    bodyStatements.Add(SyntaxFactory.ParseStatement($"Assert.Equal<{generatedTestModel.ReturnType}>(expected, result);\n").WithLeadingTrivia(SyntaxFactory.Comment("//Assert\n")));
+                }
+                else
+                {
+                    bodyStatements.Add(SyntaxFactory.ParseStatement("Assert.True(true);\n").WithLeadingTrivia(SyntaxFactory.Comment("//Assert\n")));
+                }
+            }
             
 
             var method = SyntaxFactory.MethodDeclaration(attributeLists: SyntaxFactory.List<AttributeListSyntax>(),
@@ -409,7 +433,7 @@ namespace UnitTestGenerator.Mac.Services.Implementations
                             SyntaxFactory.AttributeList(
                                 SyntaxFactory.SingletonSeparatedList(
                                     SyntaxFactory.Attribute(
-                                        SyntaxFactory.IdentifierName("Test"))))));
+                                        SyntaxFactory.IdentifierName(annotation))))));
 
 
             

@@ -5,6 +5,7 @@ using System.Linq;
 using MonoDevelop.Ide.Composition;
 using UnitTestGenerator.Mac.Services.Interfaces;
 using System.Threading.Tasks;
+using UnitTestGenerator.Services;
 
 namespace UnitTestGenerator.Mac.Services.Implementations
 {
@@ -28,43 +29,44 @@ namespace UnitTestGenerator.Mac.Services.Implementations
                 {
                     lines.Add($"using {usingStatement};");
                 }
+                if ("nunit".Equals(config.TestFramework))
+                    lines.Add("using NUnit.Framework;");
+                else if ("xunit".Equals(config.TestFramework))
+                    lines.Add("using Xunit;");
                 lines.Add("");
             }
 
-            lines.AddRange(new List<string> {
-                $"namespace {namespaceId}",
-                "{",
-                "\t[TestFixture]",
-                $"\tpublic class {classId}",
-                "\t{",
-                "\t\t[SetUp]",
-                "\t\tpublic void Setup()",
-                "\t\t{",
-            });
-            if (config.CustomSetupMethodLines != null && config.CustomSetupMethodLines.Any())
+
+            lines.Add($"namespace {namespaceId}");
+            lines.Add("{");
+            if ("nunit".Equals(config.TestFramework))
+                lines.Add("\t[TestFixture]");
+            lines.Add($"\tpublic class {classId}");
+            lines.Add("\t{");
+            if ("nunit".Equals(config.TestFramework))
             {
-
-                foreach (var line in config.CustomSetupMethodLines)
+                lines.AddRange(new List<string>
                 {
-                    lines.Add($"\t\t\t{line}");
-                }
-
+                    
+                    "\t\t[SetUp]",
+                    "\t\tpublic void Setup()",
+                    "\t\t{",
+                    "\t\t\t",
+                    "\t\t}",
+                    ""
+                });
             }
             else
             {
-                lines.Add("\t\t\t");
+                lines.Add("");
             }
-            lines.Add("\t\t}");
 
             lines.AddRange(new List<string>{
-                "",
                 "\t}",
                 "}"});
             var file = new FileInfo(filePath);
             file.Directory.Create(); // If the directory already exists, this method does nothing.
             File.WriteAllLines(file.FullName, lines);
         }
-
-
     }
 }
