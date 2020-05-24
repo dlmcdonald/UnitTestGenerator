@@ -1,0 +1,10 @@
+{
+  "remove_first_from_namespace": true,
+  "unittest_project_name": "",
+  "unittest_suffix": "Should",
+  "unittest_class_suffix": "Tests",
+  "default_using_statements": [
+    "Moq"
+  ],
+  "test_framework": "nunit"
+}

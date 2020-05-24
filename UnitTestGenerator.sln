@@ -4,6 +4,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8B53A53E-1455-4A3B-B4C1-2967FCAB748B}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		testgenerator.json = testgenerator.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5AAB221D-F4E5-401E-8C3D-E2545E353C9A}"
